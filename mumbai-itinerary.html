@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mumbai — 4 Days</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --bg: #0D0B08;
+    --surface: #141109;
+    --card: #1C1810;
+    --card-hover: #221E13;
+    --primary: #E8A535;
+    --primary-dim: rgba(232,165,53,0.12);
+    --accent: #C84B31;
+    --text: #EDE8DE;
+    --muted: #9A9182;
+    --subtle: #66604F;
+    --border: #2B2518;
+    --border-light: #352E1E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 90px 64px 70px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grain {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Cormorant', serif;
+    font-size: min(260px, 22vw);
+    color: rgba(232,165,53,0.035);
+    pointer-events: none;
+    line-height: 1;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  .hero-label {
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-label::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--primary);
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant', serif;
+    font-size: clamp(56px, 9vw, 126px);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: -0.025em;
+    color: var(--text);
+    position: relative;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--primary);
+  }
+
+  .hero-meta {
+    margin-top: 36px;
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  .hero-meta-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+  }
+
+  /* ── DAY NAV ── */
+  .day-nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    background: rgba(13,11,8,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 64px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .day-nav::-webkit-scrollbar { display: none; }
+
+  .day-nav-btn {
+    padding: 17px 26px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 1.5px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+  }
+
+  .day-nav-btn:hover { color: var(--text); }
+  .day-nav-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+
+  /* ── DAY SECTION ── */
+  .day-section {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    min-height: 100vh;
+    position: relative;
+  }
+
+  .day-content {
+    padding: 56px 64px;
+    border-right: 1px solid var(--border);
+    min-width: 0;
+  }
+
+  /* ── DAY HEADER ── */
+  .day-header {
+    margin-bottom: 48px;
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .day-number {
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .day-number::before {
+    content: '';
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: var(--primary);
+  }
+
+  .day-title {
+    font-family: 'Cormorant', serif;
+    font-size: clamp(38px, 4.5vw, 58px);
+    font-weight: 400;
+    line-height: 1.0;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+
+  .day-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+  }
+
+  .day-vibe {
+    font-family: 'Cormorant', serif;
+    font-style: italic;
+    font-size: 20px;
+    color: var(--subtle);
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+
+  /* ── TIMELINE ── */
+  .timeline {
+    position: relative;
+    padding-left: 0;
+  }
+
+  .timeline-line {
+    position: absolute;
+    left: 70px;
+    top: 20px;
+    bottom: 20px;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--border-light) 10%, var(--border-light) 90%, transparent);
+  }
+
+  .stop {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  .stop:last-child { margin-bottom: 0; }
+
+  .stop-time {
+    font-size: 10.5px;
+    color: var(--subtle);
+    letter-spacing: 0.04em;
+    padding-top: 18px;
+    text-align: right;
+    padding-right: 0;
+    line-height: 1.3;
+  }
+
+  .stop-connector {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 23px;
+    padding-left: 12px;
+    padding-right: 14px;
+    flex-shrink: 0;
+    width: 38px;
+  }
+
+  /* Redefine stop layout to include connector */
+  .stop {
+    display: grid;
+    grid-template-columns: 58px 26px 1fr;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  .stop-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border-light);
+    background: var(--bg);
+    margin-top: 3px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .stop-body {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 22px;
+    transition: all 0.18s ease;
+    position: relative;
+  }
+
+  .stop:hover .stop-body,
+  .stop.active .stop-body {
+    border-color: var(--border-light);
+    background: var(--card-hover);
+  }
+
+  .stop.active .stop-body {
+    border-color: rgba(232,165,53,0.35);
+  }
+
+  .stop:hover .stop-dot,
+  .stop.active .stop-dot {
+    border-color: var(--primary);
+    background: var(--primary);
+    box-shadow: 0 0 0 3px rgba(232,165,53,0.15);
+  }
+
+  .stop-name {
+    font-family: 'Cormorant', serif;
+    font-size: 21px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    line-height: 1.2;
+  }
+
+  .tag {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 3px 7px;
+    border-radius: 3px;
+    font-weight: 400;
+    flex-shrink: 0;
+  }
+
+  .tag-sight { color: var(--primary); background: rgba(232,165,53,0.1); }
+  .tag-food { color: #E07878; background: rgba(200,75,49,0.1); }
+  .tag-shopping { color: #7BAFC4; background: rgba(107,163,190,0.1); }
+  .tag-optional { color: var(--subtle); background: rgba(102,96,79,0.12); }
+  .tag-walk { color: #8FBF8A; background: rgba(143,191,138,0.1); }
+  .tag-coffee { color: #C4A97D; background: rgba(196,169,125,0.1); }
+  .tag-temple { color: #C47DAA; background: rgba(196,125,170,0.1); }
+  .tag-museum { color: #7D9EC4; background: rgba(125,158,196,0.1); }
+  .tag-experience { color: var(--primary); background: rgba(232,165,53,0.1); }
+  .tag-transit { color: var(--subtle); background: rgba(102,96,79,0.12); }
+  .tag-lunch { color: #E07878; background: rgba(200,75,49,0.1); }
+  .tag-culture { color: #7D9EC4; background: rgba(125,158,196,0.1); }
+
+  .stop-desc {
+    font-size: 13.5px;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .stop-duration {
+    font-size: 11px;
+    color: var(--subtle);
+    margin-top: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── MOOD FORK ── */
+  .mood-fork {
+    margin: 28px 0;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .mood-fork-header {
+    padding: 13px 20px;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    background: rgba(255,255,255,0.018);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mood-fork-header-icon {
+    color: var(--primary);
+    font-size: 12px;
+  }
+
+  .mood-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .mood-option {
+    padding: 20px 22px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+
+  .mood-option:last-child { border-right: none; }
+
+  .mood-option:hover { background: rgba(255,255,255,0.02); }
+
+  .mood-option.selected {
+    background: var(--primary-dim);
+  }
+
+  .mood-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 11px;
+    color: var(--primary);
+  }
+
+  .mood-label {
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 6px;
+  }
+
+  .mood-option:not(.selected) .mood-label { color: var(--subtle); }
+
+  .mood-name {
+    font-family: 'Cormorant', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    line-height: 1.2;
+  }
+
+  .mood-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* ── SECTION LABEL ── */
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--subtle);
+    margin: 40px 0 18px;
+    padding-top: 36px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── FOOD GRID ── */
+  .food-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .food-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 18px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .food-card:hover {
+    border-color: var(--border-light);
+    background: var(--card-hover);
+  }
+
+  .food-mood {
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 5px;
+  }
+
+  .food-name {
+    font-family: 'Cormorant', serif;
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .food-desc {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+
+  /* ── NOTE CARD ── */
+  .note-card {
+    background: rgba(232,165,53,0.06);
+    border: 1px solid rgba(232,165,53,0.15);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 28px;
+    display: flex;
+    gap: 10px;
+  }
+
+  .note-card-icon { color: var(--primary); flex-shrink: 0; font-size: 14px; }
+
+  /* ── MAP PANEL ── */
+  .map-panel {
+    position: sticky;
+    top: 54px;
+    height: calc(100vh - 54px);
+    background: #0A0905;
+  }
+
+  .map-container {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── LEAFLET OVERRIDES ── */
+  .leaflet-container { background: #0A0905 !important; font-family: 'DM Sans', sans-serif; }
+
+  .leaflet-popup-content-wrapper {
+    background: #1C1810 !important;
+    color: var(--text) !important;
+    border-radius: 6px !important;
+    border: 1px solid #352E1E !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+  }
+
+  .leaflet-popup-tip { background: #1C1810 !important; }
+
+  .leaflet-popup-close-button {
+    color: #66604F !important;
+    font-size: 16px !important;
+  }
+
+  .leaflet-popup-content { margin: 14px 16px !important; }
+
+  .popup-time {
+    font-size: 9.5px;
+    color: var(--primary);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .popup-name {
+    font-family: 'Cormorant', serif;
+    font-size: 19px;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text);
+  }
+
+  .popup-type {
+    font-size: 10.5px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .leaflet-control-zoom {
+    border: 1px solid var(--border-light) !important;
+    border-radius: 4px !important;
+  }
+
+  .leaflet-control-zoom a {
+    background: var(--card) !important;
+    color: var(--muted) !important;
+    border-color: var(--border-light) !important;
+    font-size: 16px !important;
+    line-height: 24px !important;
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .leaflet-control-zoom a:hover {
+    background: var(--card-hover) !important;
+    color: var(--text) !important;
+  }
+
+  /* ── DIVIDER ── */
+  .day-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── MAP LEGEND ── */
+  .map-legend {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    z-index: 500;
+    background: rgba(28,24,16,0.92);
+    border: 1px solid var(--border-light);
+    border-radius: 6px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* ── SPACER ── */
+  .spacer-24 { height: 24px; }
+  .spacer-16 { height: 16px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 960px) {
+    .day-section {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 340px;
+    }
+
+    .map-panel {
+      position: relative;
+      height: 340px;
+      top: 0;
+      order: -1;
+    }
+
+    .day-content {
+      padding: 40px 24px;
+      border-right: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .hero { padding: 60px 24px 48px; }
+
+    .day-nav { padding: 0 24px; }
+
+    .food-grid { grid-template-columns: 1fr; }
+
+    .mood-options {
+      grid-template-columns: 1fr;
+    }
+
+    .mood-option {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .mood-option:last-child { border-bottom: none; }
+  }
+
+  @media (max-width: 480px) {
+    .hero h1 { font-size: 52px; }
+    .stop { grid-template-columns: 52px 22px 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-grain"></div>
+  <div class="hero-bg-text">मुंबई</div>
+  <div class="hero-label">Your itinerary — Bandra base</div>
+  <h1>Four days<br>in <em>Mumbai</em></h1>
+  <div class="hero-meta">
+    <div class="hero-meta-item"><div class="hero-meta-dot"></div> Staying in Bandra</div>
+    <div class="hero-meta-item"><div class="hero-meta-dot"></div> Landing Day 1 afternoon</div>
+    <div class="hero-meta-item"><div class="hero-meta-dot"></div> Click any stop to fly to it on the map</div>
+  </div>
+</div>
+
+<!-- DAY NAV -->
+<nav class="day-nav" id="day-nav">
+  <button class="day-nav-btn active" onclick="scrollToDay(1)">Day 1 — Arrival Evening</button>
+  <button class="day-nav-btn" onclick="scrollToDay(2)">Day 2 — South Mumbai</button>
+  <button class="day-nav-btn" onclick="scrollToDay(3)">Day 3 — Bandra & Temple</button>
+  <button class="day-nav-btn" onclick="scrollToDay(4)">Day 4 — Film City</button>
+</nav>
+
+
+<!-- ═══════════════ DAY 1 ═══════════════ -->
+<div class="day-section" id="day-1">
+  <div class="day-content">
+    <div class="day-header">
+      <div class="day-number">Day 01 — Evening only</div>
+      <div class="day-title">Bandra,<br>reoriented.</div>
+      <div class="day-subtitle">Start 5:30 PM · Everything walkable or 5 min by auto</div>
+      <div class="day-vibe">"No commuting across the city tonight."</div>
+    </div>
+
+    <div class="timeline" id="tl-1">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(1,0)" id="s-1-0">
+        <div class="stop-time">5:30<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Mount Mary Church <span class="tag tag-sight">Sight</span></div>
+          <div class="stop-desc">Beautiful at golden hour — white-and-blue facade, hilltop position, calm inside. 20 minutes is enough. A quiet start before the promenade.</div>
+          <div class="stop-duration">⏱ 20 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(1,1)" id="s-1-1">
+        <div class="stop-time">6:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Bandstand Promenade <span class="tag tag-walk">Walk</span></div>
+          <div class="stop-desc">Walk south toward Mannat — Shah Rukh Khan's house, you'll know it by the crowd outside. Sunset over the Arabian Sea. Legitimately good.</div>
+          <div class="stop-duration">⏱ 45 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(1,2)" id="s-1-2">
+        <div class="stop-time">7:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Carter Road Promenade <span class="tag tag-optional">Optional</span></div>
+          <div class="stop-desc">Different energy to Bandstand — more cafe-lined, joggers, couples, food stalls. 10 min by auto. Only if you have the legs for it.</div>
+          <div class="stop-duration">⏱ 45 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Dinner — pick your mood</div>
+    <div class="food-grid">
+      <div class="food-card" onclick="flyToFood(1,0)">
+        <div class="food-mood">Street Food</div>
+        <div class="food-name">Elco Pani Puri</div>
+        <div class="food-desc">Hill Road. Then Ashok Vada Pav → Bombay Sweet Shop for mithai. The classic Mumbai sequence.</div>
+      </div>
+      <div class="food-card" onclick="flyToFood(1,1)">
+        <div class="food-mood">Sit-down, no fuss</div>
+        <div class="food-name">Benne Rasmanthan</div>
+        <div class="food-desc">Excellent South Indian, Bandra. Unpretentious and reliable.</div>
+      </div>
+      <div class="food-card" onclick="flyToFood(1,2)">
+        <div class="food-mood">Slightly Nicer</div>
+        <div class="food-name">Nutcracker</div>
+        <div class="food-desc">Good food, great cocktails. A Bandra institution worth a visit.</div>
+      </div>
+      <div class="food-card" onclick="flyToFood(1,3)">
+        <div class="food-mood">Late Night</div>
+        <div class="food-name">My Oh My / Mokai</div>
+        <div class="food-desc">Both in Bandra. Both worth it for drinks and late-night energy.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-panel" id="mp-1">
+    <div class="map-container" id="map-1"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E8A535"></div>Sights</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C84B31"></div>Food & Drinks</div>
+    </div>
+  </div>
+</div>
+
+<hr class="day-divider">
+
+<!-- ═══════════════ DAY 2 ═══════════════ -->
+<div class="day-section" id="day-2">
+  <div class="day-content">
+    <div class="day-header">
+      <div class="day-number">Day 02 — Full Day</div>
+      <div class="day-title">South Mumbai,<br>the real thing.</div>
+      <div class="day-subtitle">Leave by 9:30 AM · Beat the heat and the crowds</div>
+      <div class="day-vibe">"The city's historic core. Give it a full day."</div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(2,0)" id="s-2-0">
+        <div class="stop-time">9:30<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Jehangir Art Gallery <span class="tag tag-culture">Culture</span></div>
+          <div class="stop-desc">Free entry, 20–30 minutes. Whatever's showing. Kala Ghoda is worth wandering regardless — the whole neighbourhood has good energy in the morning.</div>
+          <div class="stop-duration">⏱ 30 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(2,1)" id="s-2-1">
+        <div class="stop-time">10:00<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Chhatrapati Shivaji Maharaj Vastu Sangrahalaya <span class="tag tag-museum">Museum</span></div>
+          <div class="stop-desc">Formerly the Prince of Wales Museum. Genuinely one of the better city museums in India — across natural history, Indian art, and arms. Don't skip it.</div>
+          <div class="stop-duration">⏱ 2 hours</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(2,2)" id="s-2-2">
+        <div class="stop-time">12:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Kala Ghoda Cafe <span class="tag tag-coffee">Coffee</span></div>
+          <div class="stop-desc">Right there. Small, good coffee, nice pause before the afternoon push south.</div>
+          <div class="stop-duration">⏱ 20 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(2,3)" id="s-2-3">
+        <div class="stop-time">1:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Gateway of India <span class="tag tag-sight">Sight</span></div>
+          <div class="stop-desc">It's touristy but it's the real thing. Stand at the waterfront, take it in. The scale works in person. The harbour view from here is the Mumbai postcard.</div>
+          <div class="stop-duration">⏱ 30 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(2,4)" id="s-2-4">
+        <div class="stop-time">1:30<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Bade Miyan <span class="tag tag-lunch">Lunch</span></div>
+          <div class="stop-desc">5 minutes from the Gateway. Order the seekh rolls. Eat standing on the street. This is the move.</div>
+          <div class="stop-duration">⏱ 45 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mood-fork">
+      <div class="mood-fork-header"><span class="mood-fork-header-icon">◆</span> 2:30 PM — Pick your afternoon</div>
+      <div class="mood-options">
+        <div class="mood-option selected" onclick="selectMood(this); flyTo(2,5)">
+          <div class="mood-label">Recommended</div>
+          <div class="mood-name">Elephanta Caves</div>
+          <div class="mood-desc">Ferry from Gateway (~1 hr each way, 1 hr at the caves). UNESCO site. Rock-cut temples, 6th century. The boat ride is part of it. Last ferry back ~5:30 PM.</div>
+        </div>
+        <div class="mood-option" onclick="selectMood(this); flyTo(2,6)">
+          <div class="mood-label">Slower Afternoon</div>
+          <div class="mood-name">Cafe Veronica's</div>
+          <div class="mood-desc">Stay in Colaba. Browse the market, sit here for cold coffee. A very specific old-Mumbai atmosphere that hasn't changed in 40 years.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline" style="margin-top:28px">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(2,7)" id="s-2-7">
+        <div class="stop-time">6:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Haji Ali Dargah <span class="tag tag-sight">Sight</span></div>
+          <div class="stop-desc">Check tide times before going — the causeway floods at high tide. Island mosque, causeway, sea on both sides. The setting does most of the work.</div>
+          <div class="stop-duration">⏱ 45 min</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(2,8)" id="s-2-8">
+        <div class="stop-time">7:30<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Bandra-Worli Sea Link <span class="tag tag-transit">On the way</span></div>
+          <div class="stop-desc">Ask your cab to take the Sealink back to Bandra. 3 minutes to cross. Worth it once, especially at dusk — the cable-stayed bridge is impressive from the car.</div>
+          <div class="stop-duration">⏱ In transit</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Dinner — pick your mood</div>
+    <div class="food-grid">
+      <div class="food-card" onclick="flyToFood(2,0)">
+        <div class="food-mood">Classic Mumbai</div>
+        <div class="food-name">Sardar Pav Bhaji</div>
+        <div class="food-desc">Tardeo, near Haji Ali and on the way back. The original. Worth the stop.</div>
+      </div>
+      <div class="food-card" onclick="flyToFood(2,1)">
+        <div class="food-mood">Light + Coffee</div>
+        <div class="food-name">Subko Cacao, Bandra</div>
+        <div class="food-desc">Back in Bandra. Lighter option with excellent chocolate and coffee.</div>
+      </div>
+    </div>
+
+    <div class="note-card">
+      <div class="note-card-icon">⚑</div>
+      <div>Haji Ali tide note: check <strong>tide-forecast.com</strong> for Mahim Bay before going. Causeway closes at high tide — aim for 1–2 hrs before or after high tide.</div>
+    </div>
+  </div>
+
+  <div class="map-panel" id="mp-2">
+    <div class="map-container" id="map-2"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E8A535"></div>Sights</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C84B31"></div>Food & Drinks</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6B6555"></div>Transit / Optional</div>
+    </div>
+  </div>
+</div>
+
+<hr class="day-divider">
+
+<!-- ═══════════════ DAY 3 ═══════════════ -->
+<div class="day-section" id="day-3">
+  <div class="day-content">
+    <div class="day-header">
+      <div class="day-number">Day 03 — Full Day</div>
+      <div class="day-title">Bandra, Temple<br>& Cinema.</div>
+      <div class="day-subtitle">Late start · 10:30 AM · No rush this morning</div>
+      <div class="day-vibe">"Shopping, a temple, and slow afternoon energy."</div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(3,0)" id="s-3-0">
+        <div class="stop-time">10:30<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Linking Road <span class="tag tag-shopping">Shopping</span></div>
+          <div class="stop-desc">Clothes, accessories, good for browsing and bargaining. Go early before it gets crowded. Part of a 2–3 hr shopping block across three streets.</div>
+          <div class="stop-duration">⏱ Part of 2–3 hr block</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(3,1)" id="s-3-1">
+        <div class="stop-time">11:30<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Hill Road <span class="tag tag-shopping">Shopping</span></div>
+          <div class="stop-desc">Denser, more chaotic than Linking Road. Better for random finds. Elco Pani Puri is here if you skipped it on Day 1.</div>
+          <div class="stop-duration">⏱ Part of 2–3 hr block</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(3,2)" id="s-3-2">
+        <div class="stop-time">12:15<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Chapel Road Thrift Stores <span class="tag tag-shopping">Shopping</span></div>
+          <div class="stop-desc">Vintage and secondhand — small shops, hit or miss, but the right kind of interesting. A loop through takes 30–45 mins and costs nothing if you don't buy anything.</div>
+          <div class="stop-duration">⏱ 30–45 min</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mood-fork">
+      <div class="mood-fork-header"><span class="mood-fork-header-icon">◆</span> 1:00 PM — Lunch options</div>
+      <div class="mood-options">
+        <div class="mood-option selected" onclick="selectMood(this); flyTo(3,3)">
+          <div class="mood-label">Worth the trip</div>
+          <div class="mood-name">Papa Pancho Da Dhaba</div>
+          <div class="mood-desc">Vile Parle — 20 min auto from Bandra. Proper Punjabi. Best dal makhani in the city. Worth the trip.</div>
+        </div>
+        <div class="mood-option" onclick="selectMood(this); flyTo(3,4)">
+          <div class="mood-label">Stay local</div>
+          <div class="mood-name">Nandan / Mercii Pub Golf</div>
+          <div class="mood-desc">Nandan Coffee if you want something light; Mercii Pub Golf for afternoon drinks and food. Both in Bandra.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timeline" style="margin-top:28px">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(3,5)" id="s-3-5">
+        <div class="stop-time">3:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Siddhivinayak Temple <span class="tag tag-temple">Temple</span></div>
+          <div class="stop-desc">Prabhadevi, 20 min from Bandra. One of Mumbai's most visited — Ganesh deity, ornate interiors, serious devotional energy. Weekday afternoons have shorter queues.</div>
+          <div class="stop-duration">⏱ 1–1.5 hours</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(3,6)" id="s-3-6">
+        <div class="stop-time">5:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">National Museum of Indian Cinema <span class="tag tag-museum">Museum</span></div>
+          <div class="stop-desc">Films Division campus, Pedder Road. A proper curated museum — not a theme park. Genuinely underrated. If you have any interest in Bollywood history, this is the right version of it.</div>
+          <div class="stop-duration">⏱ 1.5 hours</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Evening — cafe or drinks in Bandra</div>
+    <div class="food-grid">
+      <div class="food-card">
+        <div class="food-mood">Coffee</div>
+        <div class="food-name">Nandan Coffee</div>
+        <div class="food-desc">Slow afternoon in Bandra. Good if you want to decompress after the temple.</div>
+      </div>
+      <div class="food-card">
+        <div class="food-mood">Chocolate + Coffee</div>
+        <div class="food-name">Subko Cacao</div>
+        <div class="food-desc">Excellent cacao drinks and pastries. A treat after a long day on your feet.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-panel" id="mp-3">
+    <div class="map-container" id="map-3"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E8A535"></div>Sights</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#7BAFC4"></div>Shopping</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C84B31"></div>Food</div>
+    </div>
+  </div>
+</div>
+
+<hr class="day-divider">
+
+<!-- ═══════════════ DAY 4 ═══════════════ -->
+<div class="day-section" id="day-4">
+  <div class="day-content">
+    <div class="day-header">
+      <div class="day-number">Day 04 — Morning & Afternoon</div>
+      <div class="day-title">Film City<br>& out.</div>
+      <div class="day-subtitle">Leave Bandra 8:30 AM · Back by mid-afternoon</div>
+      <div class="day-vibe">"Bollywood's backyard. Then lunch and you're done."</div>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-line"></div>
+
+      <div class="stop" onclick="flyTo(4,0)" id="s-4-0">
+        <div class="stop-time">8:30<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Depart Bandra <span class="tag tag-transit">Transit</span></div>
+          <div class="stop-desc">~45 minutes to Goregaon depending on traffic. Book the Film City tour in advance — slots fill up. Government-run tours available through Maharashtra Tourism.</div>
+          <div class="stop-duration">⏱ 45 min drive</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(4,1)" id="s-4-1">
+        <div class="stop-time">9:30<br>AM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Film City, Goregaon <span class="tag tag-experience">Experience</span></div>
+          <div class="stop-desc">Backlot sets, active shoots, the sheer scale of the place. Book in advance. Genuinely fun even with only passing interest in Hindi cinema. They shoot everything here — period streets, village sets, corporate offices, jungles.</div>
+          <div class="stop-duration">⏱ 3–4 hours</div>
+        </div>
+      </div>
+
+      <div class="stop" onclick="flyTo(4,2)" id="s-4-2">
+        <div class="stop-time">1:30<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Papa Pancho Da Dhaba, Vile Parle <span class="tag tag-lunch">Lunch</span></div>
+          <div class="stop-desc">Between Film City and Bandra on the way back. The correct final meal — dal makhani, butter chicken, laccha paratha. Eat well before the flight.</div>
+          <div class="stop-duration">⏱ 1 hour</div>
+        </div>
+      </div>
+
+      <div class="stop" id="s-4-3">
+        <div class="stop-time">3:00<br>PM</div>
+        <div class="stop-connector"><div class="stop-dot"></div></div>
+        <div class="stop-body">
+          <div class="stop-name">Back in Bandra <span class="tag tag-optional">Wind Down</span></div>
+          <div class="stop-desc">Pack, debrief. Buffer time for anything you want to revisit — or one final Bombay Sweet Shop run for mithai to take home. Karachi halwa, mawa cake, milk barfi.</div>
+          <div class="stop-duration">⏱ Rest of day</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-card">
+      <div class="note-card-icon">⚑</div>
+      <div>Book Film City ahead: <strong>Maharashtra Tourism</strong> runs guided tours, or book via their official site. Go at least a day before — weekend slots especially fill fast.</div>
+    </div>
+
+    <div class="section-label">The right souvenir</div>
+    <div class="food-grid">
+      <div class="food-card">
+        <div class="food-mood">Take-home</div>
+        <div class="food-name">Bombay Sweet Shop</div>
+        <div class="food-desc">Mithai to take home. Karachi halwa, mawa cake, milk barfi. The right souvenir.</div>
+      </div>
+      <div class="food-card">
+        <div class="food-mood">One Last Coffee</div>
+        <div class="food-name">Subko Cacao</div>
+        <div class="food-desc">Specialty chocolate and coffee in Bandra. A final sit before the airport.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-panel" id="mp-4">
+    <div class="map-container" id="map-4"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#E8A535"></div>Sights</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#C84B31"></div>Food</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6B6555"></div>Transit</div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const DAY_DATA = {
+  1: {
+    center: [19.052, 72.817],
+    zoom: 14,
+    stops: [
+      { lat: 19.0516, lng: 72.8164, time: "5:30 PM", name: "Mount Mary Church", type: "sight" },
+      { lat: 19.0450, lng: 72.8130, time: "6:00 PM", name: "Bandstand Promenade", type: "sight" },
+      { lat: 19.0587, lng: 72.8222, time: "7:00 PM", name: "Carter Road Promenade", type: "optional" },
+    ],
+    food: [
+      { lat: 19.0533, lng: 72.8367, name: "Elco Pani Puri", type: "food" },
+      { lat: 19.0528, lng: 72.8355, name: "Benne Rasmanthan", type: "food" },
+      { lat: 19.0560, lng: 72.8305, name: "Nutcracker", type: "food" },
+      { lat: 19.0568, lng: 72.8318, name: "My Oh My / Mokai", type: "food" },
+    ]
+  },
+  2: {
+    center: [18.950, 72.840],
+    zoom: 12,
+    stops: [
+      { lat: 18.9270, lng: 72.8315, time: "9:30 AM",  name: "Jehangir Art Gallery", type: "sight" },
+      { lat: 18.9267, lng: 72.8323, time: "10:00 AM", name: "CSMVS (Prince of Wales Museum)", type: "sight" },
+      { lat: 18.9274, lng: 72.8311, time: "12:00 PM", name: "Kala Ghoda Cafe", type: "food" },
+      { lat: 18.9220, lng: 72.8347, time: "1:00 PM",  name: "Gateway of India", type: "sight" },
+      { lat: 18.9242, lng: 72.8338, time: "1:30 PM",  name: "Bade Miyan", type: "food" },
+      { lat: 18.9633, lng: 72.9314, time: "2:30 PM",  name: "Elephanta Caves (ferry from Gateway)", type: "sight" },
+      { lat: 18.9172, lng: 72.8315, time: "2:30 PM",  name: "Cafe Veronica's, Colaba", type: "food" },
+      { lat: 18.9826, lng: 72.8092, time: "6:00 PM",  name: "Haji Ali Dargah", type: "sight" },
+      { lat: 19.0126, lng: 72.8158, time: "7:30 PM",  name: "Bandra-Worli Sea Link", type: "optional" },
+    ],
+    food: [
+      { lat: 18.9638, lng: 72.8101, name: "Sardar Pav Bhaji (Tardeo)", type: "food" },
+      { lat: 19.0555, lng: 72.8295, name: "Subko Cacao, Bandra", type: "food" },
+    ]
+  },
+  3: {
+    center: [19.040, 72.838],
+    zoom: 13,
+    stops: [
+      { lat: 19.0579, lng: 72.8390, time: "10:30 AM", name: "Linking Road", type: "shopping" },
+      { lat: 19.0531, lng: 72.8362, time: "11:30 AM", name: "Hill Road", type: "shopping" },
+      { lat: 19.0600, lng: 72.8328, time: "12:15 PM", name: "Chapel Road Thrift Stores", type: "shopping" },
+      { lat: 19.1064, lng: 72.8479, time: "1:00 PM",  name: "Papa Pancho Da Dhaba, Vile Parle", type: "food" },
+      { lat: 19.0568, lng: 72.8295, time: "1:00 PM",  name: "Nandan Coffee / Mercii Pub Golf", type: "food" },
+      { lat: 19.0162, lng: 72.8309, time: "3:00 PM",  name: "Siddhivinayak Temple", type: "sight" },
+      { lat: 18.9715, lng: 72.8093, time: "5:00 PM",  name: "National Museum of Indian Cinema", type: "sight" },
+    ],
+    food: []
+  },
+  4: {
+    center: [19.120, 72.850],
+    zoom: 12,
+    stops: [
+      { lat: 19.0596, lng: 72.8295, time: "8:30 AM", name: "Depart Bandra", type: "optional" },
+      { lat: 19.1623, lng: 72.8481, time: "9:30 AM", name: "Film City, Goregaon", type: "sight" },
+      { lat: 19.1064, lng: 72.8479, time: "1:30 PM", name: "Papa Pancho Da Dhaba, Vile Parle", type: "food" },
+    ],
+    food: []
+  }
+};
+
+// ── COLORS ────────────────────────────────────────────────────────────────────
+const TYPE_COLOR = {
+  sight:    '#E8A535',
+  food:     '#C84B31',
+  shopping: '#7BAFC4',
+  optional: '#6B6555',
+  transit:  '#6B6555',
+};
+
+// ── MAP STATE ─────────────────────────────────────────────────────────────────
+const maps    = {};
+const markers = {};  // markers[dayNum] = array of L.Marker
+
+// ── CREATE MARKER ─────────────────────────────────────────────────────────────
+function makeMarker(lat, lng, data, map) {
+  const color = TYPE_COLOR[data.type] || '#E8A535';
+  const icon = L.divIcon({
+    html: `<div style="
+      width:11px;height:11px;
+      background:${color};
+      border-radius:50%;
+      border:1.5px solid rgba(255,255,255,0.25);
+      box-shadow:0 0 0 5px ${color}28;
+    "></div>`,
+    className: '',
+    iconSize: [11,11],
+    iconAnchor: [5.5,5.5],
+    popupAnchor: [0,-8]
+  });
+
+  const m = L.marker([lat, lng], { icon }).addTo(map);
+
+  m.bindPopup(`
+    <div class="popup-time">${data.time || ''}</div>
+    <div class="popup-name">${data.name}</div>
+  `, { maxWidth: 230, minWidth: 180, closeButton: true });
+
+  return m;
+}
+
+// ── INIT MAP ──────────────────────────────────────────────────────────────────
+function initMap(d) {
+  const data = DAY_DATA[d];
+  const map = L.map(`map-${d}`, {
+    center: data.center,
+    zoom:   data.zoom,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+
+  const dayMarkers = [];
+
+  data.stops.forEach(stop => {
+    dayMarkers.push(makeMarker(stop.lat, stop.lng, stop, map));
+  });
+
+  (data.food || []).forEach(f => {
+    dayMarkers.push(makeMarker(f.lat, f.lng, f, map));
+  });
+
+  maps[d]    = map;
+  markers[d] = dayMarkers;
+}
+
+// ── FLY TO ────────────────────────────────────────────────────────────────────
+function flyTo(dayNum, stopIdx) {
+  const data = DAY_DATA[dayNum];
+  const stop = data.stops[stopIdx];
+  if (!stop || !maps[dayNum]) return;
+
+  maps[dayNum].flyTo([stop.lat, stop.lng], 15, { duration: 0.9 });
+  setTimeout(() => markers[dayNum][stopIdx]?.openPopup(), 950);
+
+  // Highlight active stop card
+  document.querySelectorAll(`#day-${dayNum} .stop`).forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(`s-${dayNum}-${stopIdx}`);
+  if (el) el.classList.add('active');
+}
+
+function flyToFood(dayNum, foodIdx) {
+  const data  = DAY_DATA[dayNum];
+  const food  = data.food?.[foodIdx];
+  if (!food || !maps[dayNum]) return;
+
+  const markerIdx = data.stops.length + foodIdx;
+  maps[dayNum].flyTo([food.lat, food.lng], 15, { duration: 0.9 });
+  setTimeout(() => markers[dayNum][markerIdx]?.openPopup(), 950);
+}
+
+// ── MOOD FORK ─────────────────────────────────────────────────────────────────
+function selectMood(el) {
+  el.closest('.mood-options').querySelectorAll('.mood-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// ── SCROLL TO DAY ─────────────────────────────────────────────────────────────
+function scrollToDay(n) {
+  document.getElementById(`day-${n}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── NAV HIGHLIGHT ON SCROLL ───────────────────────────────────────────────────
+const navBtns = document.querySelectorAll('.day-nav-btn');
+const sections = [1,2,3,4].map(n => document.getElementById(`day-${n}`));
+
+const io = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const n = parseInt(entry.target.id.split('-')[1]);
+      navBtns.forEach((b,i) => b.classList.toggle('active', i === n-1));
+    }
+  });
+}, { threshold: 0.25 });
+
+sections.forEach(s => s && io.observe(s));
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  [1,2,3,4].forEach(initMap);
+});
+</script>
+</body>
+</html>
